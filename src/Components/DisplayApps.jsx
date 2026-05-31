@@ -1,9 +1,36 @@
+import { useState } from "react";
 import { FaStar, FaDownload } from "react-icons/fa";
-
+import { Link } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import { useContext } from "react";
+import { installContext } from "../context";
 const DisplayApps = ({ app }) => {
+    const { installApps, installApp, unInstallApp } = useContext(installContext);
+
+    if (!app) {
+        return (
+            <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs flex items-center justify-center h-full min-h-[150px]">
+                <p className="text-slate-400 text-sm">App information not available</p>
+            </div>
+        );
+    }
+
+    const isInstalled = installApps?.some((s) => s.id === app.id) || false;
+    const handleInstall = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isInstalled) {
+            unInstallApp(app);
+            toast.success(`${app.name} uninstalled successfully!`);
+        } else {
+            installApp(app);
+            toast.success(`${app.name} installed successfully!`);
+        }
+    }
     return (
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
-            <div>
+            <Link to={`/apps/${app.id}`} className="block flex-grow focus:outline-none">
                 {/* Header Section: Icon & Names */}
                 <div className="flex gap-4 items-start">
                     <img
@@ -43,15 +70,20 @@ const DisplayApps = ({ app }) => {
                 <p className="text-sm text-slate-500 mt-3 line-clamp-2 leading-relaxed">
                     {app.description}
                 </p>
-            </div>
+            </Link>
 
             {/* Footer Section: Price & CTA */}
             <div className="flex justify-between items-center mt-5 pt-3 border-t border-slate-50">
                 <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-lg">
                     {app.free ? "Free" : `$${app.price}`}
                 </span>
-                <button className="btn btn-primary btn-sm rounded-xl px-4 font-semibold text-xs transition-transform duration-200 active:scale-95 cursor-pointer">
-                    Install
+                <button 
+                    onClick={handleInstall} 
+                    className={`btn btn-sm rounded-xl px-4 font-semibold text-xs transition-all duration-200 active:scale-95 cursor-pointer ${
+                        isInstalled ? "btn-error text-white bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600" : "btn-primary"
+                    }`}
+                >
+                    {isInstalled ? "Uninstall" : "Install"}
                 </button>
             </div>
         </div>
